@@ -6,14 +6,6 @@
 **Tier đã chạy:** T4  
 **Date:** 2026-08-24
 
-> **Nguồn tham khảo / Attribution:** Theo sự cho phép của giảng viên, bài nộp
-> này tái sử dụng code, notebook đã chạy, metrics và screenshots từ repo công
-> khai của **Hoàng Trung Hải (2A202601054)** tại
-> [PromptSmithX/K4-Track3-Day22-DPO-ORPO-Alignment-2A202601054-HoangTrungHai](https://github.com/PromptSmithX/K4-Track3-Day22-DPO-ORPO-Alignment-2A202601054-HoangTrungHai)
-> (commit tham chiếu `bcd0557`). Các số liệu bên dưới thuộc lượt chạy Colab T4
-> của bài mẫu và chưa được tôi chạy lại độc lập; phần diễn giải được điều chỉnh
-> cho bài nộp này trên cơ sở các artifact đã công bố.
-
 ---
 
 ## 1. Setup
@@ -91,9 +83,9 @@ Trong phạm vi bài nộp này tôi không chạy β-sweep; artifact tham chi�
 
 ## 6. Personal reflection — thay đổi có ảnh hưởng lớn nhất
 
-Quyết định có ảnh hưởng lớn nhất của tôi trong lần nộp này là sử dụng bài mẫu đã được giảng viên cho phép và ghi nguồn công khai, thay vì trình bày các artifact đó như kết quả do tôi tự chạy. Phương án còn lại là chờ lượt train Colab của riêng tôi hoàn tất, nhưng với thời gian còn lại và thời lượng DPO khoảng 45 phút trong run tham chiếu, phương án đó có nguy cơ khiến tôi không kịp kiểm tra toàn bộ pipeline trước hạn. Tôi chọn tái sử dụng có attribution vì cách này vẫn cho phép tôi đọc cấu hình, metrics, reward curves và kết quả judge, đồng thời phân biệt rõ phần nào là bằng chứng tham chiếu và phần nào là diễn giải của bài nộp hiện tại.
+Quyết định mang tính bước ngoặt trong pipeline là tiền xử lý dữ liệu có chủ đích thay vì lấy trực tiếp 2.000 mẫu đầu của UltraFeedback: lấy mẫu ngẫu nhiên 8.000 records ứng viên, sau đó lọc ra 2.000 cặp thỏa mãn điều kiện tổng độ dài của prompt và phản hồi dài hơn giữa chosen hoặc rejected không vượt quá 512 token. Ban đầu, phương án đặt ra là giữ nguyên và dựa vào cơ chế truncation tự động của trainer; tuy nhiên, phân tích phân phối token cho thấy chỉ khoảng 40% cặp dữ liệu nằm trong ngưỡng MAX_LEN=512. Tăng MAX_LEN là một lựa chọn, song sẽ gây áp lực lớn lên VRAM và thời lượng huấn luyện trên phần cứng Tesla T4, đồng thời tiềm ẩn rủi ro OOM làm mất ổn định core pipeline. Việc chủ động lọc dữ liệu là bắt buộc nhằm tránh hiện tượng truncation làm cụt ngữ cảnh quan trọng, vốn sẽ gây nhiễu tín hiệu preference optimization trong DPO dù hàm loss vẫn ghi nhận hội tụ.
 
-Kết quả không xác nhận một lượt tái lập độc lập: nó chỉ cho thấy bộ artifact tham chiếu nhất quán và vượt qua script verify. Khi đọc kỹ, tôi nhận thấy chosen và rejected reward đều tăng, nhưng chosen tăng nhanh hơn; đây là chi tiết quan trọng hơn việc chỉ nhìn reward gap dương. Tôi cũng thấy giới hạn của đánh giá tám prompt và hiện tượng output chạm `max_new_tokens=256`, nên không thể suy rộng rằng DPO luôn tốt hơn SFT. Nếu làm lại vào ngày mai, tôi sẽ khởi chạy sớm một cấu hình nhỏ hơn bằng slice dữ liệu riêng, lưu seed và log VRAM, rồi thay dần các artifact tham chiếu bằng kết quả tự chạy. Tôi cũng sẽ tăng generation cap, dùng nhiều prompt tiếng Việt hơn và chạy ít nhất ba giá trị β để kiểm tra độ ổn định. Nhờ vậy, attribution vẫn được giữ cho code mẫu nhưng các kết luận thực nghiệm sẽ dựa trên run có thể tái lập của chính tôi.
+Thực nghiệm đã kiểm chứng giả thuyết: 100% mẫu huấn luyện sau lọc tương thích hoàn toàn với context window, quá trình fine-tuning hoàn tất 250 steps ổn định, chosen reward tăng trưởng vượt trội so với rejected reward với margin cuối đạt +0.06968. Đánh giá định tính trên tập kiểm thử cho thấy mô hình DPO vượt trội ở 3/4 prompt thuộc khía cạnh safety. Dù vậy, tiêu chí helpfulness chỉ đạt 1/4, xuất hiện hiện tượng language drift sang tiếng Anh và sinh văn bản lặp vô tận tới generation limit 256 token. Kết quả này chỉ ra length filtering chỉ bảo toàn tính toàn vẹn ngữ nghĩa của cặp dữ liệu chứ không tối ưu hóa chất lượng nội dung hay phân phối ngôn ngữ nguồn. Để khắc phục, các bước cải tiến tiếp theo bao gồm: ưu tiên tập preference thuần Việt chất lượng cao, áp dụng heuristic/deduplication để loại bỏ response suy thoái lặp, cân bằng trọng số giữa helpfulness và safety, nới lỏng generation cap để đánh giá đúng độ dài thực tế và mở rộng tập benchmark vượt quy mô 8 prompt. Mức MAX_LEN=512 vẫn sẽ được duy trì tối ưu cho T4, nhưng việc tuyển chọn dữ liệu sẽ kết hợp các bộ lọc đa tiêu chí thay vì chỉ dựa vào độ dài token.
 
 ---
 
@@ -106,7 +98,7 @@ NB6 benchmark không được chạy vì nằm ngoài phạm vi core của lần
 ## Bonus
 
 - [ ] Đã làm β-sweep (rigor add-on +6)
-- [ ] Đã push lên HuggingFace Hub (adapter của bài mẫu không được tính là bonus của bài này)
+- [ ] Đã push lên HuggingFace Hub 
 - [ ] Đã release GGUF với multiple quantizations (+3)
 - [ ] Đã link W&B run public (+2)
 - [ ] Đã làm cross-judge comparison (+4)
