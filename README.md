@@ -1,5 +1,13 @@
 # Day 22 — DPO/ORPO Alignment Lab (Track 3)
 
+> **Nguồn tham khảo / Attribution:** Bài nộp này sử dụng code, notebook đã chạy,
+> metrics và screenshots từ repo công khai của **Hoàng Trung Hải (2A202601054)**
+> theo sự cho phép của giảng viên:
+> [PromptSmithX/K4-Track3-Day22-DPO-ORPO-Alignment-2A202601054-HoangTrungHai](https://github.com/PromptSmithX/K4-Track3-Day22-DPO-ORPO-Alignment-2A202601054-HoangTrungHai),
+> tham chiếu tại commit `bcd0557`. Các số liệu thực nghiệm trong repo thuộc lượt
+> chạy Colab T4 của bài mẫu và chưa được chạy lại độc lập trong repo này. Phần
+> danh tính và reflection đã được điều chỉnh cho bài nộp của Hoàng Vũ Trung Nguyên.
+
 Lab cho **AICB-P2T3 · Ngày 22 · DPO/ORPO Alignment — From SFT to Preference Learning**.
 Build SFT-mini checkpoint → train DPO adapter → compare SFT-only vs SFT+DPO → merge + GGUF + serve.
 
@@ -272,7 +280,7 @@ Full provocations: [`BONUS-CHALLENGE.md`](BONUS-CHALLENGE.md) (tiếng Việt) �
 - **Slide deck:** [`day22/day07-dpo-orpo-alignment-tu-sft-en-preference-learning.tex`](../day07-dpo-orpo-alignment-tu-sft-en-preference-learning.tex)
 - **Sibling Day 21 lab** (LoRA/QLoRA fine-tuning, the SFT predecessor): [VinUni-AI20k/Day21-Track3-Finetuning-LLMs-LoRA-QLoRA](https://github.com/VinUni-AI20k/Day21-Track3-Finetuning-LLMs-LoRA-QLoRA)
 - **Stack:** Unsloth (Daniel Han + Mike Han), TRL (Hugging Face), PEFT, bitsandbytes, llama.cpp
-- **Datasets:** UltraFeedback (Argilla), `5CD-AI/Vietnamese-alpaca-cleaned`
+- **Datasets:** UltraFeedback (Argilla), `5CD-AI/Vietnamese-alpaca-gpt4-gg-translated`
 
 ---
 

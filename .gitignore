@@ -24,6 +24,16 @@ gguf/
 runs/
 wandb/
 
+# Submission evidence reused with explicit attribution (small artifacts only)
+!data/pref/
+!data/pref/train.parquet
+!data/pref/eval.parquet
+!adapters/sft-mini/
+!adapters/sft-mini/adapter_config.json
+!adapters/dpo/
+!adapters/dpo/adapter_config.json
+!adapters/dpo/dpo_metrics.json
+
 # HuggingFace cache (Colab + local — model weights are huge)
 .cache/
 hf_cache/
